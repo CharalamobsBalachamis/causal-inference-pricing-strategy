@@ -1,0 +1,141 @@
+---
+title: "Causal Impact Analysis"
+subtitle: "Evaluating Pricing Strategy via Difference-in-Differences (DiD)"
+author: "Charalambos Balachamis - MSc Applied Economics & Data Analysis"
+date: today
+format: 
+  html:
+    theme: flatly
+    toc: true
+    toc-title: "Table of Contents"
+    code-fold: true
+execute:
+  warning: false
+  message: false
+---
+
+## 1. Introduction
+
+A common challenge in evaluating marketing and pricing initiatives is isolating the campaign's actual effect from natural seasonal trends. When sales increase following a campaign launch, before and after comparisons often miss attribute general market growth to the intervention itself.
+
+**Objective:** This project determines whether a localized "Free Shipping" campaign launched in the state of São Paulo (SP) on January 1, 2018, drove statistically significant incremental revenue, controlling for macroeconomic trends and regional baseline differences.
+
+------------------------------------------------------------------------
+
+## 2. Data Processing & Methodology
+
+Objective: This project determines whether a localized "Free Shipping" campaign launched in the state of São Paulo (SP) on January 1, 2018, drove statistically significant incremental revenue, controlling for macroeconomic trends and regional baseline differences.
+
+::: {.callout-note title="Portfolio Context & Data Strategy"}
+While the underlying financial data, geographic distributions, and time-series trends are 100% authentic (sourced from the public **Olist E-commerce dataset on Kaggle**), the specific "Free Shipping" campaign is a hypothetical intervention.
+
+This scenario was deliberately designed to demonstrate the application of modern causal inference techniques (Difference-in-Differences) on real-world, noisy observational data where natural A/B testing was not available.
+:::
+
+## 2. Data Processing & Methodology
+
+To isolate the causal impact, I used a Difference-in-Differences (DiD) estimator on this panel data. The treatment group consists of orders from São Paulo, while the control group consists of neighboring major states (Rio de Janeiro and Minas Gerais)...
+
+```{r}
+#| label: data-prep
+#| summary: "Data Wrangling & Aggregation"
+
+# Load required libraries
+library(tidyverse)
+library(lubridate)
+library(fixest)
+
+# 1. Load the data 
+orders <- read_csv("olist_orders_dataset.csv")
+items <- read_csv("olist_order_items_dataset.csv")
+customers <- read_csv("olist_customers_dataset.csv")
+
+# 2. Join and Clean the Data 
+master_df <- orders %>%
+  filter(order_status == "delivered") %>%
+  left_join(items, by = "order_id") %>%
+  left_join(customers, by = "customer_id") %>%
+  mutate(
+    order_date = ymd_hms(order_purchase_timestamp),
+    month_year = as.Date(floor_date(order_date, "month")) 
+  ) %>%
+  drop_na(price, month_year, customer_state)
+
+# 3. Define Treatment vs. Control
+panel_data <- master_df %>%
+  filter(
+    customer_state %in% c("SP", "RJ", "MG"),
+    month_year >= as.Date("2017-01-01") & month_year <= as.Date("2018-08-01")
+  ) %>%
+  mutate(
+    group = ifelse(customer_state == "SP", "Treatment (SP)", "Control (RJ & MG)"),
+    is_post = ifelse(month_year >= as.Date("2018-01-01"), 1, 0)
+  ) %>%
+  group_by(month_year, group, is_post) %>%
+  summarise(total_revenue = sum(price), .groups = 'drop')
+```
+
+The fundamental assumption of the DiD model is parallel trends—meaning that in the absence of the treatment, both groups would have followed the same trajectory. The pre-intervention data (2017) shows the revenue trends moving in tandem, satisfying this assumption.
+
+```{r}
+#| label: parallel-trends-plot
+#| fig-cap: "Pre-intervention trends (shaded region) remain relatively parallel, validating the model."
+
+ggplot(panel_data, aes(x = month_year, y = total_revenue, color = group)) +
+  geom_line(linewidth = 1.2) + 
+  geom_point(size = 3) +
+  geom_vline(xintercept = as.Date("2018-01-01"), 
+             linetype = "dashed", color = "black", linewidth = 1) +
+  annotate("rect", xmin = as.Date("2017-01-01"), xmax = as.Date("2018-01-01"), 
+           ymin = -Inf, ymax = Inf, alpha = 0.1, fill = "blue") +
+  labs(
+    title = "Testing the Parallel Trends Assumption",
+    subtitle = "Pre-Intervention trends (shaded area) must be relatively parallel.",
+    x = "Month",
+    y = "Total Revenue (BRL)",
+    color = "Region Group"
+  ) +
+  scale_y_continuous(labels = scales::comma) + 
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", size = 14)
+  )
+```
+
+------------------------------------------------------------------------
+
+## 3. Econometric Model
+
+The causal impact was estimated using a Two-Way Fixed Effects (TWFE) model. The core Difference-in-Differences equation nets out the natural changes in the control group from the changes in the treatment group:
+
+$$ Y_{it} = \beta_0 + \beta_1(Treat_i) + \beta_2(Post_t) + \beta_3(Treat_i \times Post_t) + \epsilon_{it} $$
+
+Here, $\beta_3$ represents the interaction term, which mathematically isolates the incremental revenue directly attributable to the campaign.
+
+```{r}
+#| label: regression-output
+
+# Run the DiD regression using the interaction term
+did_model <- feols(total_revenue ~ group * is_post, data = panel_data)
+
+# View the results
+summary(did_model)
+```
+
+------------------------------------------------------------------------
+
+## 4. Results & Business Impact
+
+The regression output clarifies the components of the post-intervention revenue. A naive "before-and-after" comparison would have failed to account for a natural market lift of roughly 82,343 BRL/month across the Brazilian e-commerce sector in early 2018.
+
+### Financial Breakdown
+
+| Metric | Estimated Value (BRL) | Interpretation |
+|:-----------------------|-----------------------:|:-----------------------|
+| **Control Baseline** | 132,045 | Average monthly revenue of control states pre-campaign. |
+| **Regional Difference** | \+ 45,977 | SP's baseline size advantage over the control group. |
+| **Macro Trend** | \+ 82,344 | Natural 2018 market growth independent of the campaign. |
+| **Causal Impact** | **+ 104,551** | **Net-new monthly revenue caused by the campaign.** |
+
+**Conclusion:** The analysis indicates the pricing strategy was highly effective. After controlling for confounding variables and natural market trends, the campaign generated a statistically significant increase of \~104,500 BRL per month, resulting in roughly **836,400 BRL in true incremental revenue** over the observed 8-month period.
