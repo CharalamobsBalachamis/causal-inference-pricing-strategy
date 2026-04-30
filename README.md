@@ -1,23 +1,31 @@
-# Causal Impact Analysis: Evaluating Pricing Strategy via Difference-in-Differences
+Causal Impact Analysis: Pricing Strategy Evaluation
 
-**[View the Live Executive Report Here](https://charalamobsbalachamis.github.io/causal-inference-pricing-strategy/did_portfolio.html)**
+An analytical project that applies econometric modeling to quantify the causal impact of a localized marketing campaign. This implementation uses a Difference-in-Differences (DiD) framework to isolate true revenue uplift from underlying market trends.
 
-## Overview
-When businesses launch promotional campaigns, sales often rise. However, isolating the campaign's actual return on investment (ROI) from natural seasonal market growth is challenging. Naive before-and-after comparisons typically misattribute general market trends to the intervention.
+Objective
 
-This project evaluates whether a localized marketing campaign in São Paulo drove statistically significant incremental revenue, controlling for macroeconomic trends and regional baseline differences.
+Naive before-and-after comparisons of sales performance often overestimate the effectiveness of marketing interventions by failing to account for seasonality and macroeconomic growth.
 
-## Methodology
-To isolate the causal impact, I used a Difference-in-Differences (DiD) estimator on panel data.
-* **Treatment Group:** Orders from São Paulo (SP).
-* **Control Group:** Orders from neighboring major states (Rio de Janeiro and Minas Gerais).
-* **Model:** A Two-Way Fixed Effects (TWFE) model was used to filter out time-trends and seasonal noise, satisfying the fundamental Parallel Trends assumption.
+This project replaces simple comparisons with a causal inference approach, enabling accurate estimation of incremental revenue attributable to a campaign while mitigating analytical bias.
 
-## Results
-A standard comparison would have falsely attributed a natural market lift of ~82,000 BRL/month to the campaign. After mathematically stripping away baseline differences and macro trends, the model isolated the true causal impact:
-* The campaign generated a statistically significant ($p < 0.05$) increase of ~104,500 BRL per month.
-* Over the 8-month post-intervention period, the strategy generated approximately 836,400 BRL in true incremental revenue.
-
-## Context & Data Source
-* **Data Source:** The public [Olist Brazilian E-Commerce Dataset via Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
-* **Note:** While the underlying financial data, geographic distributions, and time-series trends are authentic, the specific marketing campaign is a hypothetical intervention designed to demonstrate the application of causal inference techniques on observational data.
+Tech Stack
+Language: Python / R (adjust depending on your actual code)
+Libraries: pandas, statsmodels / tidyverse (adjust as needed)
+Methodology: Difference-in-Differences (DiD), Two-Way Fixed Effects (TWFE)
+Logic & Features
+Causal Impact Estimator:
+Implements a Difference-in-Differences model comparing a treatment group (São Paulo) against control regions (Rio de Janeiro, Minas Gerais), isolating the net effect of the intervention.
+Trend & Seasonality Control:
+Uses a Two-Way Fixed Effects framework to remove time-based shocks and region-specific baseline differences, ensuring robustness under the Parallel Trends assumption.
+ROI Decomposition:
+Quantifies the gap between naive revenue attribution and true causal impact, demonstrating how traditional methods can mislead business decisions.
+Results
+Identified a statistically significant ($p < 0.05$) incremental revenue increase of ~104,500 BRL per month.
+Demonstrated that naive analysis would have misattributed ~82,000 BRL/month to the campaign.
+Estimated total incremental revenue of ~836,400 BRL over the 8-month post-intervention period.
+Files in this Repository
+causal_analysis_script.*: Core data processing and econometric modeling logic.
+analysis_report.*: Report containing methodology, results, and visualizations.
+Data Source & Notes
+Dataset: Olist Brazilian E-Commerce Dataset (Kaggle)
+Note: The campaign scenario is hypothetical and designed to demonstrate causal inference techniques on real-world transactional data.
