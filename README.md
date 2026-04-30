@@ -12,7 +12,7 @@ By comparing a treatment region (São Paulo) against highly correlated control r
 
 ### Key Features & Logic
 * **Causal Impact Estimator:** Implements a DiD model to isolate the net effect of the intervention from background market noise.
-* **Trend & Seasonality Control:** Utilizes a Two-Way Fixed Effects (TWFE) framework via the `fixest` package to ensure robustness under the Parallel Trends assumption.
+* **Trend & Seasonality Control:** Utilizes a Difference-in-Differences regression model to account for baseline regional differences and general market trends, ensuring robustness under the Parallel Trends assumption.
 * **ROI Decomposition:** Quantifies the exact gap between naive revenue attribution (guessing) and true causal impact (mathematical proof), highlighting how traditional methods mislead decision-making.
 
 ### Business Impact (The Results)
@@ -22,7 +22,7 @@ By comparing a treatment region (São Paulo) against highly correlated control r
 
 ### Tech Stack
 * **Language:** R
-* **Libraries:** `tidyverse` (Data Wrangling), `fixest` (High-dimensional Fixed Effects), `lubridate` (Time-series formatting), `ggplot2` (Data Visualization).
+* **Libraries:** `tidyverse` (Data Wrangling), `fixest` (Econometric Modeling), `lubridate` (Time-series formatting), `ggplot2` (Data Visualization).
 
 ### Files in this Repository
 * `did_project.R` — Core data processing, ETL, and econometric modeling logic.
