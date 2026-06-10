@@ -20,12 +20,6 @@ By comparing a treatment region (São Paulo) against highly correlated control r
 * **Prevented Misattribution:** Demonstrated that a standard naive analysis would have falsely attributed an extra ~82,000 BRL/month to the campaign, inflating the perceived ROI.
 * **Total Value:** Proved a total incremental revenue generation of **~836,400 BRL** over the 8-month post-intervention period.
 
-### Tech Stack
-* **Language:** R
-* **Libraries:** `tidyverse` (Data Wrangling), `fixest` (Econometric Modeling), `lubridate` (Time-series formatting), `ggplot2` (Data Visualization).
 
-### Files in this Repository
-* `did_project.R` — Core data processing, ETL, and econometric modeling logic.
-* `did_project.qmd` / `.html` — Executable Quarto report containing methodology, diagnostic visualizations, and regression outputs.
 
 *Note: Built using the Olist Brazilian E-Commerce Dataset (Kaggle). While the underlying transaction data is real, the specific "Free Shipping" intervention is a hypothetical scenario designed specifically to demonstrate causal inference techniques in a corporate environment.*
